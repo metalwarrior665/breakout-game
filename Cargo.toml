@@ -1,0 +1,9 @@
+[package]
+name = "pong_crusher"
+version = "0.2.0"
+authors = ["Lukas Krivka"]
+edition = "2018"
+
+[dependencies]
+bevy = "0.3.0"
+rand = "0.7.3"
