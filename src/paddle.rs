@@ -12,7 +12,7 @@ const PADDLE_SPEED: f32 = 400.;
 
 pub struct Paddle;
 
-pub fn spawn_paddle(mut commands: Commands, materials: Res<Materials>) {
+pub fn spawn_paddle(commands: &mut Commands, materials: &Materials) {
     commands
         .spawn(SpriteComponents {
             material: materials.paddle_material.clone(),

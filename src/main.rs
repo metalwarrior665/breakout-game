@@ -11,15 +11,19 @@ mod brick;
 mod collider;
 mod popup;
 mod modifiers;
+mod game_data;
+mod text;
+mod level;
 
 use velocity::{apply_velocity};
-use paddle::{spawn_paddle, paddle_movement};
-use ball::{spawn_ball, despawn_fallen};
+use paddle::{paddle_movement};
+use ball::{handle_fallen_down};
 use wall::{spawn_walls};
-use brick::spawn_bricks;
 use popup::{spawn_popup};
 use collider::{ball_collisions, paddle_collisions};
 use modifiers::{apply_modifiers};
+use game_data::{GameData,LevelFinishedEvent,level_finished,start_level};
+use text::{spawn_text,update_text};
 
 const WINDOW_WIDTH: u32 = 1366;
 const WINDOW_HEIGHT: u32 = 768;
@@ -46,34 +50,34 @@ fn setup(mut commands: Commands, mut materials: ResMut<Assets<ColorMaterial>>) {
     });
 }
 fn main() {
-    
     App::build()
+        .add_resource(GameData::default())
         .add_resource(ClearColor(Color::rgb(0.04, 0.04, 0.04)))
         .add_resource(WindowDescriptor {
             title: "Pong Cursher!".to_string(),
             width: WINDOW_WIDTH,
             height: WINDOW_HEIGHT,
+            vsync: true,
             ..Default::default()
         })
         .add_startup_system(setup.system())
-        .add_startup_stage("spawn_paddle")
-        .add_startup_system_to_stage("spawn_paddle", spawn_paddle.system())
-        .add_startup_stage("spawn_ball")
-        .add_startup_system_to_stage("spawn_ball", spawn_ball.system())
-        .add_startup_stage("spawn_brick")
-        .add_startup_system_to_stage("spawn_brick", spawn_bricks.system())
         .add_startup_stage("spawn_wall")
         .add_startup_system_to_stage("spawn_wall", spawn_walls.system())
+        .add_startup_system(spawn_text.system())
         .add_plugins(DefaultPlugins)
         // Doesn't do anything now
-        .add_plugin(FrameTimeDiagnosticsPlugin)
+        .add_plugin(FrameTimeDiagnosticsPlugin::default())
         .add_system(apply_velocity.system())
         .add_system(paddle_movement.system())
         .add_system(ball_collisions.system())
         .add_system(paddle_collisions.system())
-        .add_system(despawn_fallen.system())
+        .add_system(handle_fallen_down.system())
         .add_system(spawn_popup.system())
         .add_system(apply_modifiers.system())
+        .add_system(level_finished.system())
+        .add_system(update_text.system())
+        .add_system(start_level.system())
+        .add_event::<LevelFinishedEvent>()
         .run();
         
 }

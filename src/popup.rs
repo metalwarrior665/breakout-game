@@ -2,11 +2,19 @@ use std::time::Duration;
 use bevy::prelude::*;
 use rand::Rng;
 
-use crate::{collider::Collider, Materials, velocity::Velocity, WINDOW_HEIGHT, WINDOW_WIDTH};
+use crate::{
+    collider::Collider,
+    Materials,
+    velocity::Velocity,
+    WINDOW_HEIGHT,
+    WINDOW_WIDTH,
+    game_data::{GameData,GameState},
+};
 
 const POPUP_SIZE: f32 = 20.;
 const POPUP_START_Y: f32 = WINDOW_HEIGHT as f32 / 2.;
 const POPUP_SPEED: f32 = 100.;
+const BASE_POPUP_INTERVAL: u64 = 20000;
 
 #[derive(Debug)]
 pub enum Popup {
@@ -18,8 +26,7 @@ pub struct PopupSpawnTimer(Timer);
 
 impl Default for PopupSpawnTimer {
     fn default() -> Self {
-        rand::random::<f32>();
-        Self(Timer::new(Duration::from_millis(5000), true))
+        Self(Timer::new(Duration::from_millis(BASE_POPUP_INTERVAL), true))
     }
 }
 
@@ -27,8 +34,12 @@ pub fn spawn_popup (
     mut commands: Commands,
     time: Res<Time>,
     materials: Res<Materials>,
+    game_data: Res<GameData>,
     mut timer: Local<PopupSpawnTimer>,
 ) {
+    if game_data.state != GameState::Play {
+        return;
+    }
     timer.0.tick(time.delta_seconds);
     if timer.0.finished {
         // -1, 1

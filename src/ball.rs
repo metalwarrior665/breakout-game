@@ -1,6 +1,14 @@
 use bevy::prelude::*;
 
-use crate::{modifiers::Modifiers, collider::Collider, WINDOW_HEIGHT, Materials, velocity::Velocity, popup::Popup};
+use crate::{
+    modifiers::Modifiers,
+    collider::Collider,
+    WINDOW_HEIGHT,
+    Materials,
+    velocity::Velocity,
+    popup::Popup,
+    game_data::{GameData, LevelFinishedEvent},
+};
 
 const BALL_START_SPEED: f32 = 400.;
 const BALL_START_X: f32 = 0.;
@@ -9,7 +17,7 @@ const BALL_DIAMETER: f32 = 30.;
 
 pub struct Ball;
 
-fn _spawn_ball(commands: & mut Commands, materials: &Materials) {
+pub fn spawn_ball(commands: & mut Commands, materials: &Materials) {
     let random = rand::random::<f32>() - 0.5;
     println!("Random: {}", random);
     commands
@@ -25,13 +33,11 @@ fn _spawn_ball(commands: & mut Commands, materials: &Materials) {
         .with(Modifiers::default());
 }
 
-pub fn spawn_ball(mut commands: Commands, materials: Res<Materials>) {
-    _spawn_ball(& mut commands, &materials);
-}
-
-pub fn despawn_fallen(
+pub fn handle_fallen_down(
     mut commands: Commands,
     materials: Res<Materials>,
+    mut game_data: ResMut<GameData>,
+    mut game_over_events: ResMut<Events<LevelFinishedEvent>>, 
     q_ball: Query<With<Ball, (&Transform, Entity)>>,
     q_popup: Query<With<Popup, (&Transform, Entity)>>
 ) {
@@ -47,7 +53,13 @@ pub fn despawn_fallen(
         if y < -(WINDOW_HEIGHT as f32 / 2.) {
             commands.despawn(entity);
 
-            _spawn_ball(& mut commands, &materials);
+            game_data.lives -= 1;
+            println!("Fallen down! Current lives: {}", game_data.lives);
+            if game_data.lives == 0 {
+                game_over_events.send(LevelFinishedEvent::Failure)
+            } else {
+                spawn_ball(& mut commands, &materials);
+            }
         }
     }
 }

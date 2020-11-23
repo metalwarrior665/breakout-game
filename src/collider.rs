@@ -7,6 +7,7 @@ use crate::{
     paddle::Paddle,
     modifiers::{Modifiers,Modifier,ModifierStatus,ModifierType},
     popup::Popup,
+    game_data::{LevelFinishedEvent},
 };
 
 #[derive(Debug)]
@@ -90,15 +91,17 @@ pub fn paddle_collisions(
 
 pub fn ball_collisions(
     mut commands: Commands,
+    mut game_over_events: ResMut<Events<LevelFinishedEvent>>,
     mut ball_collisions: Query<With<Ball, (&Transform, &mut Velocity, &Sprite)>>,
     all_collisions: Query<(&Transform, &Sprite, &Collider, Entity)>,
-    paddle_q: Query<&Paddle>
+    paddle_q: Query<&Paddle>,
+    collider_q: Query<&Collider>
 ) {
     // Ball collisions
     for (ball_transform, mut ball_vel, ball_sprite) in ball_collisions.iter_mut() {
         for (col_transform, col_sprite, collider, collider_entity) in all_collisions.iter() {
             // TODO: Replace this collider, things often go through
-            let mut collision = collide(
+            let collision = collide(
                 ball_transform.translation,
                 ball_sprite.size,
                 col_transform.translation,
@@ -108,6 +111,20 @@ pub fn ball_collisions(
             if let Some(collision) = collision {
                 if let Collider::Destroyable = *collider {
                     commands.despawn(collider_entity);
+
+                    // We calculate if there are any destroyables left, if not we won the level
+                    // We subtract 1 because the last entity despawn will execure after this query
+                    let destroyables_left = collider_q.iter().filter(|comp| {
+                        match comp {
+                            Collider::Destroyable => true,
+                            _ => false,
+                        }
+                    }).count() - 1;
+                    println!("Destroyables left: {}", destroyables_left);
+                    
+                    if destroyables_left == 0 {
+                        game_over_events.send(LevelFinishedEvent::Success);
+                    }
                 }
 
                 // break if this collide is on a solid, otherwise continue check whether a solid is also in collision
