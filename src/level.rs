@@ -14,7 +14,7 @@ pub fn spawn_level (
     materials: &Materials,
     game_data: &GameData,
 ) {
-    spawn_ball(&mut commands, &materials);
+    spawn_ball(&mut commands, &materials, game_data.level);
     spawn_bricks(&mut commands, &materials, game_data.level);
     spawn_paddle(&mut commands, &materials);
 }

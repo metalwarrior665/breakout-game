@@ -24,6 +24,7 @@ use collider::{ball_collisions, paddle_collisions};
 use modifiers::{apply_modifiers};
 use game_data::{GameData,LevelFinishedEvent,level_finished,start_level};
 use text::{spawn_text,update_text};
+use brick::{handle_destroyable_hit,DestroyableHitEvent};
 
 const WINDOW_WIDTH: u32 = 1366;
 const WINDOW_HEIGHT: u32 = 768;
@@ -77,7 +78,9 @@ fn main() {
         .add_system(level_finished.system())
         .add_system(update_text.system())
         .add_system(start_level.system())
+        .add_system(handle_destroyable_hit.system())
         .add_event::<LevelFinishedEvent>()
+        .add_event::<DestroyableHitEvent>()
         .run();
         
 }

@@ -7,7 +7,7 @@ use crate::{
     paddle::Paddle,
     modifiers::{Modifiers,Modifier,ModifierStatus,ModifierType},
     popup::Popup,
-    game_data::{LevelFinishedEvent},
+    brick::{DestroyableHitEvent},
 };
 
 #[derive(Debug)]
@@ -90,12 +90,10 @@ pub fn paddle_collisions(
 }
 
 pub fn ball_collisions(
-    mut commands: Commands,
-    mut game_over_events: ResMut<Events<LevelFinishedEvent>>,
+    mut destroyable_hit_events: ResMut<Events<DestroyableHitEvent>>,
     mut ball_collisions: Query<With<Ball, (&Transform, &mut Velocity, &Sprite)>>,
     all_collisions: Query<(&Transform, &Sprite, &Collider, Entity)>,
     paddle_q: Query<&Paddle>,
-    collider_q: Query<&Collider>
 ) {
     // Ball collisions
     for (ball_transform, mut ball_vel, ball_sprite) in ball_collisions.iter_mut() {
@@ -110,21 +108,7 @@ pub fn ball_collisions(
 
             if let Some(collision) = collision {
                 if let Collider::Destroyable = *collider {
-                    commands.despawn(collider_entity);
-
-                    // We calculate if there are any destroyables left, if not we won the level
-                    // We subtract 1 because the last entity despawn will execure after this query
-                    let destroyables_left = collider_q.iter().filter(|comp| {
-                        match comp {
-                            Collider::Destroyable => true,
-                            _ => false,
-                        }
-                    }).count() - 1;
-                    println!("Destroyables left: {}", destroyables_left);
-                    
-                    if destroyables_left == 0 {
-                        game_over_events.send(LevelFinishedEvent::Success);
-                    }
+                    destroyable_hit_events.send(DestroyableHitEvent { entity: collider_entity });
                 }
 
                 // break if this collide is on a solid, otherwise continue check whether a solid is also in collision
@@ -189,7 +173,6 @@ pub fn ball_collisions(
                     println!("Hit right wall, fixing from {} to {}", ball_transform.translation.x(), max_ball_x);
                     ball_vel.dx = -ball_vel.dx;
                 }
-                
             }
         }
     }

@@ -5,7 +5,7 @@ use crate::{
     paddle::Paddle,
     ball::Ball,
     popup::Popup,
-    brick::Brick,
+    brick::Destroyable,
     level::spawn_level,
 };
 
@@ -59,10 +59,10 @@ pub fn level_finished(
     paddle: Query<With<Paddle, Entity>>,
     balls: Query<With<Ball, Entity>>,
     popups: Query<With<Popup, Entity>>,
-    bricks: Query<With<Brick, Entity>>,
+    destroyables: Query<With<Destroyable, Entity>>,
 ) {
     if let Some(event) = reader.iter(&game_over_events).next() {
-        for ent in paddle.iter().chain(balls.iter()).chain(popups.iter()).chain(bricks.iter()) {
+        for ent in paddle.iter().chain(balls.iter()).chain(popups.iter()).chain(destroyables.iter()) {
             commands.despawn(ent);
         }
         if let LevelFinishedEvent::Success = event {
