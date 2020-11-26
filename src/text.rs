@@ -16,7 +16,18 @@ pub struct SpeedText;
 pub struct SizeText;
 pub struct PausedText;
 
-pub fn spawn_text(
+pub struct UIPlugin;
+
+impl Plugin for UIPlugin {
+    fn build(&self, app: &mut AppBuilder) {
+        app
+            .add_startup_system_to_stage("spawn", spawn_text.system())
+            .add_system(update_text.system())
+            .add_system(paused_text.system());
+    }
+}
+
+fn spawn_text(
     mut commands: Commands,
     asset_server: Res<AssetServer>,
     materials: Res<Materials>,
@@ -30,10 +41,12 @@ pub fn spawn_text(
             style: Style {
                 position_type: PositionType::Absolute,
                 position: Rect {
-                    left: Val::Px(10.),
-                    bottom: Val::Px(200.),
+                    left: Val::Px(20.),
+                    bottom: Val::Px(100.),
                     ..Default::default()
                 },
+                align_items: AlignItems::FlexStart,
+                flex_direction: FlexDirection::Column,
                 // flex_direction: FlexDirection::ColumnReverse,
                 ..Default::default()
             },
@@ -65,7 +78,6 @@ pub fn spawn_text(
                         },
                     },
                     style: Style {
-                        flex_direction: FlexDirection::Column,
                         ..Default::default()
                     },
                     ..Default::default()
@@ -82,7 +94,6 @@ pub fn spawn_text(
                         },
                     },
                     style: Style {
-                        flex_direction: FlexDirection::Column,
                         ..Default::default()
                     },
                     ..Default::default()
@@ -102,8 +113,6 @@ pub fn spawn_text(
                     bottom: Val::Px(WINDOW_HEIGHT / 2.),
                     ..Default::default()
                 },
-                align_self: AlignSelf::Center,
-                // flex_direction: FlexDirection::ColumnReverse,
                 ..Default::default()
             },
             material: materials.background_material.clone(),
@@ -125,7 +134,7 @@ pub fn spawn_text(
         });
 }
 
-pub fn update_text(
+fn update_text(
     game_data: Res<GameData>,
     mut level_lives_text_q: Query<With<LevelLivesText, &mut Text>>,
     mut size_text_q: Query<With<SizeText, &mut Text>>,
@@ -133,7 +142,12 @@ pub fn update_text(
     paddle_q: Query<With<Paddle, &Modifiers>>
 ) {
 
-    let mut text = level_lives_text_q.iter_mut().next().unwrap();
+    let text_maybe = level_lives_text_q.iter_mut().next();
+    // For testing no UI
+    if text_maybe.is_none() {
+        return;
+    }
+    let mut text = text_maybe.unwrap();
     text.value = format!(
         "Lives: {}\nLevel: {}",
         game_data.lives,
@@ -166,11 +180,16 @@ pub fn update_text(
     }
 }
 
-pub fn paused_text(
+fn paused_text(
     game_data: Res<GameData>,
     mut paused_text_q: Query<With<PausedText,& mut Text>>,
 ) {
-    let mut text = paused_text_q.iter_mut().next().unwrap();
+    let text_maybe = paused_text_q.iter_mut().next();
+    // For testing no UI
+    if text_maybe.is_none() {
+        return;
+    }
+    let mut text = text_maybe.unwrap();
     match game_data.state {
         GameState::Paused(PausedState::Start) => text.value = format!("Press SPACE to start the game"),
         GameState::Paused(PausedState::Won) => {

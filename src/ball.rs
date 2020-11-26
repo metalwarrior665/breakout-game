@@ -6,8 +6,8 @@ use crate::{
     WINDOW_HEIGHT,
     Materials,
     velocity::Velocity,
-    popup::Popup,
-    game_data::{GameData, LevelFinishedEvent},
+    powerup::Powerup,
+    game_data::{GameData, LifeLostEvent},
 };
 
 const BALL_START_SPEED: f32 = 400.;
@@ -49,15 +49,15 @@ pub fn spawn_ball(commands: & mut Commands, materials: &Materials, level: u16) {
 pub fn handle_fallen_down(
     mut commands: Commands,
     materials: Res<Materials>,
-    mut game_data: ResMut<GameData>,
-    mut game_over_events: ResMut<Events<LevelFinishedEvent>>, 
+    game_data: ResMut<GameData>,
+    mut life_lost_events: ResMut<Events<LifeLostEvent>>, 
     q_ball: Query<With<Ball, (&Transform, Entity)>>,
-    q_popup: Query<With<Popup, (&Transform, Entity)>>
+    q_powerup: Query<With<Powerup, (&Transform, Entity)>>
 ) {
-    for (transform, entity) in q_popup.iter() {
+    for (transform, entity) in q_powerup.iter() {
         let y = transform.translation.y();
         if y < -(WINDOW_HEIGHT / 2.) {
-            println!("Popup despawned");
+            println!("Powerup despawned");
             commands.despawn(entity);
         }
     }
@@ -65,14 +65,8 @@ pub fn handle_fallen_down(
         let y = transform.translation.y();
         if y < -(WINDOW_HEIGHT / 2.) {
             commands.despawn(entity);
-
-            game_data.lives -= 1;
-            println!("Fallen down! Current lives: {}", game_data.lives);
-            if game_data.lives == 0 {
-                game_over_events.send(LevelFinishedEvent::Lost)
-            } else {
-                spawn_ball(& mut commands, &materials, game_data.level);
-            }
+            life_lost_events.send(LifeLostEvent);
+            spawn_ball(& mut commands, &materials, game_data.level);
         }
     }
 }

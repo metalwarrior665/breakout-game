@@ -6,8 +6,9 @@ use crate::{
     velocity::Velocity,
     paddle::Paddle,
     modifiers::{Modifiers,Modifier,ModifierStatus,ModifierType},
-    popup::Popup,
+    powerup::Powerup,
     brick::{DestroyableHitEvent},
+    game_data::{LifeLostEvent},
 };
 
 #[derive(Debug)]
@@ -18,13 +19,13 @@ pub enum Collider {
     WallLeft,
     WallRight,
     Invunerable,
-    Popup,
+    Powerup,
 }
 
 impl Collider {
     pub fn is_solid(&self) -> bool {
         match self {
-            Collider::Popup => false,
+            Collider::Powerup => false,
             _ => true
         }
     }
@@ -32,10 +33,11 @@ impl Collider {
 
 pub fn paddle_collisions(
     mut commands: Commands,
+    mut life_lost_events: ResMut<Events<LifeLostEvent>>, 
     mut paddle_colls: Query<With<Paddle, (&mut Transform, &Sprite, &mut Modifiers)>>,
     // Ball handless all of its own collisions
     all_collisions: Query<Without<Ball, Without<Paddle, (&Transform, &Sprite, &Collider, Entity)>>>,
-    popups: Query<&Popup>,
+    powerups: Query<&Powerup>,
 ) {
     for (mut paddle_transform, paddle_sprite, mut modifiers) in paddle_colls.iter_mut() {
         for (col_transform, col_sprite, collider, collider_entity) in all_collisions.iter() {
@@ -48,20 +50,21 @@ pub fn paddle_collisions(
 
             if collision.is_some() {
                 println!("Paddle collider");
-                // Picked popup
-                if let Ok(popup) = popups.get(collider_entity) {
-                    println!("Popup collider collider");
-                    match popup {
-                        Popup::Speed(mult) => modifiers.replace_or_insert(Modifier{
+                // Picked powerup
+                if let Ok(powerup) = powerups.get(collider_entity) {
+                    println!("powerup collider collider");
+                    match powerup {
+                        Powerup::Speed(mult) => modifiers.replace_or_insert(Modifier{
                             mod_type: ModifierType::Speed,
                             value: *mult,
                             status: ModifierStatus::Unapplied
                         }),
-                        Popup::Size(mult) => modifiers.replace_or_insert(Modifier{
+                        Powerup::Size(mult) => modifiers.replace_or_insert(Modifier{
                             mod_type: ModifierType::SizeX,
                             value: *mult,
                             status: ModifierStatus::Unapplied
                         }),
+                        Powerup::Bomb => life_lost_events.send(LifeLostEvent),
                     }
                     commands.despawn(collider_entity);
                 }   
@@ -83,7 +86,6 @@ pub fn paddle_collisions(
                     println!("Hit right wall, fixing from {} to {}", paddle_transform.translation.x(), max_paddle_x);
                     *paddle_transform.translation.x_mut() = max_paddle_x;
                 }
-                
             }
         }
     }

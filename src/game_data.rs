@@ -4,11 +4,12 @@ use crate::{
     Materials,
     paddle::Paddle,
     ball::Ball,
-    popup::Popup,
+    powerup::Powerup,
     brick::Destroyable,
     level::spawn_level,
 };
 
+pub struct LifeLostEvent;
 pub enum LevelFinishedEvent {
     Won,
     Lost,
@@ -54,6 +55,21 @@ pub fn start_level(
     } 
 }
 
+pub fn life_lost(
+    mut reader: Local<EventReader<LifeLostEvent>>,
+    life_lost_events: Res<Events<LifeLostEvent>>,
+    mut level_finished_events: ResMut<Events<LevelFinishedEvent>>, 
+    mut game_data: ResMut<GameData>,
+) {
+    if let Some(_event) = reader.iter(&life_lost_events).next() {
+        game_data.lives -= 1;
+        println!("Fallen down! Current lives: {}", game_data.lives);
+        if game_data.lives == 0 {
+            level_finished_events.send(LevelFinishedEvent::Lost)
+        }
+    }
+}
+
 // Despawn everything and show Game Over text
 pub fn level_finished(
     mut commands: Commands,
@@ -62,11 +78,11 @@ pub fn level_finished(
     mut game_data: ResMut<GameData>,
     paddle: Query<With<Paddle, Entity>>,
     balls: Query<With<Ball, Entity>>,
-    popups: Query<With<Popup, Entity>>,
+    powerups: Query<With<Powerup, Entity>>,
     destroyables: Query<With<Destroyable, Entity>>,
 ) {
     if let Some(event) = reader.iter(&game_over_events).next() {
-        for ent in paddle.iter().chain(balls.iter()).chain(popups.iter()).chain(destroyables.iter()) {
+        for ent in paddle.iter().chain(balls.iter()).chain(powerups.iter()).chain(destroyables.iter()) {
             commands.despawn(ent);
         }
         game_data.lives = 3;
