@@ -10,12 +10,18 @@ use crate::{
 };
 
 pub enum LevelFinishedEvent {
-    Success,
-    Failure,
+    Won,
+    Lost,
 }
-#[derive(PartialEq)]
-pub enum GameState {
+#[derive(PartialEq, Eq)]
+pub enum PausedState {
     Start,
+    Won,
+    Lost,
+}
+#[derive(PartialEq, Eq)]
+pub enum GameState {
+    Paused(PausedState),
     Play,
 }
 pub struct GameData {
@@ -29,7 +35,7 @@ impl Default for GameData {
         GameData {
             lives: 3,
             level: 1,
-            state: GameState::Start,
+            state: GameState::Paused(PausedState::Start),
         }
     }
 }
@@ -40,14 +46,12 @@ pub fn start_level(
     materials: Res<Materials>,
     mut game_data: ResMut<GameData>,
 ) {
-    if game_data.state != GameState::Start {
-        return;
-    }
-
-    if input.pressed(KeyCode::Space) {
-        spawn_level(&mut commands, &materials, &game_data);
-        game_data.state = GameState::Play;
-    }
+    if let GameState::Paused(_) = game_data.state {
+        if input.pressed(KeyCode::Space) {
+            spawn_level(&mut commands, &materials, &game_data);
+            game_data.state = GameState::Play;
+        }
+    } 
 }
 
 // Despawn everything and show Game Over text
@@ -65,10 +69,13 @@ pub fn level_finished(
         for ent in paddle.iter().chain(balls.iter()).chain(popups.iter()).chain(destroyables.iter()) {
             commands.despawn(ent);
         }
-        if let LevelFinishedEvent::Success = event {
-            game_data.level += 1;
-        }
         game_data.lives = 3;
-        game_data.state = GameState::Start;
+        if let LevelFinishedEvent::Won = event {
+            game_data.level += 1;
+            game_data.state = GameState::Paused(PausedState::Won);
+        } else {
+            game_data.state = GameState::Paused(PausedState::Lost);
+            game_data.level = 1;
+        }   
     }
 }

@@ -12,7 +12,7 @@ use crate::{
 
 const BALL_START_SPEED: f32 = 400.;
 const BALL_START_X: f32 = 0.;
-const BALL_START_Y: f32 = 200. - WINDOW_HEIGHT as f32 / 2.;
+const BALL_START_Y: f32 = 200. - WINDOW_HEIGHT / 2.;
 const BALL_DIAMETER: f32 = 30.;
 
 pub struct Ball;
@@ -56,20 +56,20 @@ pub fn handle_fallen_down(
 ) {
     for (transform, entity) in q_popup.iter() {
         let y = transform.translation.y();
-        if y < -(WINDOW_HEIGHT as f32 / 2.) {
+        if y < -(WINDOW_HEIGHT / 2.) {
             println!("Popup despawned");
             commands.despawn(entity);
         }
     }
     for (transform, entity) in q_ball.iter() {
         let y = transform.translation.y();
-        if y < -(WINDOW_HEIGHT as f32 / 2.) {
+        if y < -(WINDOW_HEIGHT / 2.) {
             commands.despawn(entity);
 
             game_data.lives -= 1;
             println!("Fallen down! Current lives: {}", game_data.lives);
             if game_data.lives == 0 {
-                game_over_events.send(LevelFinishedEvent::Failure)
+                game_over_events.send(LevelFinishedEvent::Lost)
             } else {
                 spawn_ball(& mut commands, &materials, game_data.level);
             }

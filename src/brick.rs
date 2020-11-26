@@ -49,7 +49,7 @@ pub fn handle_destroyable_hit (
             println!("Destroyables left: {}", destroyables_left);
             
             if destroyables_left == 0 {
-                level_finished_events.send(LevelFinishedEvent::Success);
+                level_finished_events.send(LevelFinishedEvent::Won);
             }
         }
     }
@@ -74,7 +74,7 @@ pub fn spawn_bricks(
     if level == 2 {
         for x in -4..=4 {
             for y in 1..=3 { 
-                let material = materials.brick_material.clone();
+                let material = materials.brick_2_material.clone();
                 spawn_brick(&mut commands, material, x, y, level);
             }   
         }

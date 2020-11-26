@@ -12,7 +12,7 @@ use crate::{
 };
 
 const POPUP_SIZE: f32 = 20.;
-const POPUP_START_Y: f32 = WINDOW_HEIGHT as f32 / 2.;
+const POPUP_START_Y: f32 = WINDOW_HEIGHT / 2.;
 const POPUP_SPEED: f32 = 100.;
 const BASE_POPUP_INTERVAL: u64 = 20000;
 
@@ -44,7 +44,7 @@ pub fn spawn_popup (
     if timer.0.finished {
         // -1, 1
         let random_x = rand::random::<f32>() * 2. - 1.;
-        let x_pos = WINDOW_WIDTH as f32 / 2. * random_x;
+        let x_pos = WINDOW_WIDTH / 2. * random_x;
         
 
         let mut rng = rand::thread_rng();
@@ -60,14 +60,14 @@ pub fn spawn_popup (
 
         println!("Spawning popup {:?} at x: {}", popup, x_pos);
 
-        let (material, mult) = match popup {
-            Popup::Size(mult) => (materials.popup_material_size.clone(), mult),
-            Popup::Speed(mult) => (materials.popup_material_speed.clone(), mult),
+        let (material,  mult, size_x) = match popup {
+            Popup::Size(mult) => (materials.popup_material_size.clone(), mult, 2.),
+            Popup::Speed(mult) => (materials.popup_material_speed.clone(), mult, 1.),
         };
         commands
             .spawn(SpriteComponents {
                 material,
-                sprite: Sprite::new(Vec2::new(POPUP_SIZE * mult, POPUP_SIZE * mult)),
+                sprite: Sprite::new(Vec2::new(POPUP_SIZE * mult * size_x, POPUP_SIZE * mult)),
                 transform: Transform::from_translation(
                     Vec3::new(x_pos, POPUP_START_Y, 0.)
                 ),

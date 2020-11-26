@@ -6,7 +6,7 @@ const PADDLE_WIDTH: f32 = 150.;
 const PADDLE_HEIGHT: f32 = 20.;
 
 const PADDLE_START_X: f32 = 0.;
-const PADDLE_START_Y: f32 = 50. - WINDOW_HEIGHT as f32 / 2.;
+const PADDLE_START_Y: f32 = 50. - WINDOW_HEIGHT / 2.;
 
 const PADDLE_SPEED: f32 = 400.;
 
