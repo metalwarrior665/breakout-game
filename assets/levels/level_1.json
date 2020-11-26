@@ -1,0 +1,17 @@
+{
+    "brick_rows": [],
+    "bricks": [
+        {
+            "x": 400,
+            "y": 400,
+            "size_mult": 1,
+            "hp": 1
+        }
+    ],
+    "balls": [
+        {
+            "speed": 1,
+            "size_mult": 1
+        }
+    ]
+}

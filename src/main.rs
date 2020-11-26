@@ -24,9 +24,10 @@ use modifiers::{apply_modifiers};
 use game_data::{GameData,LevelFinishedEvent,LifeLostEvent,level_finished,start_level,life_lost};
 use text::{UIPlugin};
 use brick::{handle_destroyable_hit,DestroyableHitEvent};
+use level::{LevelConfig,LevelConfigLoader};
 
-const WINDOW_WIDTH: f32 = 1366.;
-const WINDOW_HEIGHT: f32 = 768.;
+const WINDOW_WIDTH: f32 = 1280.;// 1366.;
+const WINDOW_HEIGHT: f32 = 720.; //768.;
 
 const SPEED_COLOR: (f32, f32, f32) = (0.1, 0.9, 0.1);
 const SIZE_COLOR: (f32, f32, f32) = (0.9, 0.1, 0.9);
@@ -44,9 +45,14 @@ pub struct Materials {
     background_material: Handle<ColorMaterial>,
 }
 
+pub struct Levels {
+    level_1: Handle<LevelConfig>
+}
+
 fn setup(
     mut commands: Commands,
     mut materials: ResMut<Assets<ColorMaterial>>,
+    mut levels: ResMut<Assets<LevelConfig>>,
     asset_server: Res<AssetServer>,
 ) {
     commands.spawn(Camera2dComponents::default());
@@ -61,18 +67,19 @@ fn setup(
         powerup_material_bomb: materials.add(asset_server.load("materials/power-ups/bomb.png").into()),
         background_material: materials.add(Color::rgb(0.04, 0.04, 0.04).into()),
     });
+    commands.insert_resource(Levels {
+        level_1: asset_server.load("levels/level_1"),
+    });
+    println!("Levels resource inserted");
 }
 fn main() {
     App::build()
         .add_plugins(DefaultPlugins)
         .add_resource(GameData::default())
         .add_resource(ClearColor(Color::rgb(0.04, 0.04, 0.04)))
-        .add_resource(WindowDescriptor {
-            title: "Pong Cursher!".to_string(),
-            width: WINDOW_WIDTH as u32,
-            height: WINDOW_HEIGHT as u32,
-            ..Default::default()
-        })
+        .add_asset::<LevelConfig>()
+        .init_asset_loader::<LevelConfigLoader>()
+        
         .add_startup_stage("setup")
         .add_startup_system_to_stage("setup", setup.system())
 

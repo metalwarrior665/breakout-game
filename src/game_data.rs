@@ -1,12 +1,12 @@
 use bevy::prelude::*;
 
 use crate::{
-    Materials,
+    Materials,Levels,LevelConfig,
     paddle::Paddle,
     ball::Ball,
     powerup::Powerup,
     brick::Destroyable,
-    level::spawn_level,
+    level::{spawn_level}
 };
 
 pub struct LifeLostEvent;
@@ -46,10 +46,13 @@ pub fn start_level(
     input: Res<Input<KeyCode>>,
     materials: Res<Materials>,
     mut game_data: ResMut<GameData>,
+    level_config_asset: ResMut<Assets<LevelConfig>>,
+    levels: Res<Levels>
 ) {
     if let GameState::Paused(_) = game_data.state {
         if input.pressed(KeyCode::Space) {
-            spawn_level(&mut commands, &materials, &game_data);
+            let level_config = level_config_asset.get(&levels.level_1).unwrap();
+            spawn_level(&mut commands, level_config, &materials, &game_data);
             game_data.state = GameState::Play;
         }
     } 

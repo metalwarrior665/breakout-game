@@ -15,18 +15,44 @@ const BRICK_SIZE_Y: f32 = 70.;
 const BRICK_SPACING_X: f32 = 20.;
 const BRICK_SPACING_Y: f32 = 20.;
 
-fn spawn_brick (commands: &mut Commands, material: Handle<ColorMaterial>, x: i32, y: i32, level: u16) {
+pub fn spawn_brick (commands: &mut Commands, material: Handle<ColorMaterial>, x: f32, y: f32, hp: u16, size_mult: f32) {
     commands
         .spawn(SpriteComponents {
             material,
-            sprite: Sprite::new(Vec2::new(BRICK_SIZE_X, BRICK_SIZE_Y)),
+            sprite: Sprite::new(Vec2::new(BRICK_SIZE_X * size_mult, BRICK_SIZE_Y * size_mult)),
             transform: Transform::from_translation(
-                Vec3::new((BRICK_SIZE_X + BRICK_SPACING_X) * x as f32, (BRICK_SIZE_Y + BRICK_SPACING_Y) * y as f32, 0.)
+                Vec3::new(x, y, 0.)
             ),
             ..Default::default()
         })
         .with(Collider::Destroyable)
-        .with(Destroyable { hp: if level == 2 { 2 } else { 1 }  });
+        .with(Destroyable { hp });
+}
+
+pub fn spawn_bricks(
+    mut commands: &mut Commands,
+    materials: &Materials,
+    level: u16,
+) {
+    // Spawn few rows of bricks
+    if level == 1 {
+        for x in -3..=3 {
+            for y in 1..=2 { 
+                let material = materials.brick_material.clone();
+                spawn_brick(&mut commands, material, x as f32, y as f32, level, 1.);
+            }   
+        }
+    }
+
+    // Spawn few rows of bricks
+    if level == 2 {
+        for x in -4..=4 {
+            for y in 1..=3 { 
+                let material = materials.brick_2_material.clone();
+                spawn_brick(&mut commands, material, x as f32, y as f32, level, 1.);
+            }   
+        }
+    }
 }
 
 pub fn handle_destroyable_hit (
@@ -51,32 +77,6 @@ pub fn handle_destroyable_hit (
             if destroyables_left == 0 {
                 level_finished_events.send(LevelFinishedEvent::Won);
             }
-        }
-    }
-}
-
-pub fn spawn_bricks(
-    mut commands: &mut Commands,
-    materials: &Materials,
-    level: u16,
-) {
-    // Spawn few rows of bricks
-    if level == 1 {
-        for x in -3..=3 {
-            for y in 1..=2 { 
-                let material = materials.brick_material.clone();
-                spawn_brick(&mut commands, material, x, y, level);
-            }   
-        }
-    }
-
-    // Spawn few rows of bricks
-    if level == 2 {
-        for x in -4..=4 {
-            for y in 1..=3 { 
-                let material = materials.brick_2_material.clone();
-                spawn_brick(&mut commands, material, x, y, level);
-            }   
         }
     }
 }

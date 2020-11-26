@@ -17,7 +17,7 @@ const BALL_DIAMETER: f32 = 30.;
 
 pub struct Ball;
 
-pub fn spawn_ball(commands: & mut Commands, materials: &Materials, level: u16) {
+pub fn spawn_ball(commands: & mut Commands, materials: &Materials, speed: f32, size_mult: f32) {
     let random = rand::random::<f32>() - 0.5;
 
     let mut modifiers = Modifiers {
@@ -25,10 +25,10 @@ pub fn spawn_ball(commands: & mut Commands, materials: &Materials, level: u16) {
     };
 
     // Currently just hardcoding this, will be better if modifiers are passed from level setup
-    if level == 2 {
+    if size_mult != 1. {
         let modifier = Modifier {
             mod_type: ModifierType::Size,
-            value: 0.75,
+            value: size_mult,
             status: ModifierStatus::Unapplied,
         };
         modifiers.modifiers.push(modifier);
@@ -40,7 +40,7 @@ pub fn spawn_ball(commands: & mut Commands, materials: &Materials, level: u16) {
             transform: Transform::from_translation(Vec3::new(BALL_START_X, BALL_START_Y , 0.)),
             ..Default::default()
         })
-        .with(Velocity { dx: random, dy: 1., speed: BALL_START_SPEED })
+        .with(Velocity { dx: random, dy: 1., speed: BALL_START_SPEED * speed })
         .with(Ball)
         .with(Collider::Ball)
         .with(modifiers);
@@ -66,7 +66,7 @@ pub fn handle_fallen_down(
         if y < -(WINDOW_HEIGHT / 2.) {
             commands.despawn(entity);
             life_lost_events.send(LifeLostEvent);
-            spawn_ball(& mut commands, &materials, game_data.level);
+            spawn_ball(& mut commands, &materials, 1., 1.);
         }
     }
 }
