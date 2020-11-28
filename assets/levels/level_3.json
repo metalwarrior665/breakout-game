@@ -1,0 +1,43 @@
+{
+    "brick_rows": [
+        {
+            "x_left":-500,
+            "y_top": 200,
+            "brick_count": 3,
+            "brick_interval": 150,
+            "brick_size_mult": 1,
+            "brick_hp": 1
+        },
+        {
+            "x_left": -500,
+            "y_top": 300,
+            "brick_count": 3,
+            "brick_interval": 150,
+            "brick_size_mult": 1,
+            "brick_hp": 2
+        },
+        {
+            "x_left": -500,
+            "y_top": 300,
+            "brick_count": 3,
+            "brick_interval": 150,
+            "brick_size_mult": 1,
+            "brick_hp": 1
+        }
+    ],
+    "bricks": [],
+    "balls": [
+        {
+            "speed": 0.75,
+            "size_mult": 1
+        },
+        {
+            "speed": 0.75,
+            "size_mult": 1
+        },
+        {
+            "speed": 0.75,
+            "size_mult": 1
+        }
+    ]
+}

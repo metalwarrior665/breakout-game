@@ -7,29 +7,42 @@ use bevy::{
 };
 
 use crate::{
-    Materials,Levels,
-    game_data::GameData,
+    Materials,
     ball::spawn_ball,
-    brick::{spawn_brick, spawn_bricks},
+    brick::{spawn_brick, BRICK_SIZE_X},
     paddle::spawn_paddle,
 };
+
+fn get_correct_brick_mat (hp: u32, materials: &Materials) -> Handle<ColorMaterial> {
+    match hp {
+        1 => materials.brick_material.clone(),
+        2 => materials.brick_2_material.clone(),
+        _ => materials.brick_material.clone(),
+    }
+}
 
 // This is not a system
 pub fn spawn_level (
     mut commands: &mut Commands,
     level_config: &LevelConfig,
     materials: &Materials,
-    game_data: &GameData,
 ) {
     for ball in &level_config.balls {
         spawn_ball(&mut commands, &materials, ball.speed, ball.size_mult);
     }
 
     for brick in &level_config.bricks {
-        let material = materials.brick_material.clone();
+        let material = get_correct_brick_mat(brick.hp, &materials);
         spawn_brick(&mut commands, material, brick.x, brick.y, brick.hp as u16, brick.size_mult);
     }
-    
+
+    for brick_row in &level_config.brick_rows {
+        for i in 0..brick_row.brick_count {
+            let material = get_correct_brick_mat(brick_row.brick_hp, &materials);
+            let x = brick_row.x_left + i as f32 * BRICK_SIZE_X * brick_row.brick_size_mult + i as f32* brick_row.brick_interval;
+            spawn_brick(&mut commands, material, x, brick_row.y_top, brick_row.brick_hp as u16, brick_row.brick_size_mult);
+        }
+    }
     
     spawn_paddle(&mut commands, &materials);
 }
@@ -101,16 +114,13 @@ impl AssetLoader for LevelConfigLoader {
         load_context: &'a mut LoadContext,
     ) -> BoxedFuture<'a, Result<(), anyhow::Error>> {
         Box::pin(async move {
-            println!("Before JSON parse");
             let custom_asset = serde_json::from_slice::<LevelConfig>(bytes)?;
-            println!("After JSON parse");
             load_context.set_default_asset(LoadedAsset::new(custom_asset));
-            println!("Load context set default asset");
             Ok(())
         })
     }
 
     fn extensions(&self) -> &[&str] {
-        &["custom"]
+        &["json"]
     }
 }

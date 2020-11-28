@@ -7,7 +7,6 @@ use crate::{
     paddle::Paddle,
     modifiers::{Modifiers,Modifier,ModifierStatus,ModifierType},
     powerup::Powerup,
-    brick::{DestroyableHitEvent},
     game_data::{LifeLostEvent},
 };
 
@@ -18,7 +17,8 @@ pub enum Collider {
     Destroyable,
     WallLeft,
     WallRight,
-    Invunerable,
+    WallTop,
+    // Invunerable,
     Powerup,
 }
 
@@ -90,9 +90,16 @@ pub fn paddle_collisions(
         }
     }
 }
+#[derive(Clone)]
+pub enum BallHitEvent {
+    Destroyable(Entity),
+    Wall,
+    Paddle,
+}
 
+// TODO: Rework this whole thing
 pub fn ball_collisions(
-    mut destroyable_hit_events: ResMut<Events<DestroyableHitEvent>>,
+    mut ball_hit_events: ResMut<Events<BallHitEvent>>, 
     mut ball_collisions: Query<With<Ball, (&Transform, &mut Velocity, &Sprite)>>,
     all_collisions: Query<(&Transform, &Sprite, &Collider, Entity)>,
     paddle_q: Query<&Paddle>,
@@ -109,8 +116,9 @@ pub fn ball_collisions(
             );
 
             if let Some(collision) = collision {
+                let mut ball_hit_event = None;
                 if let Collider::Destroyable = *collider {
-                    destroyable_hit_events.send(DestroyableHitEvent { entity: collider_entity });
+                    ball_hit_event = Some(BallHitEvent::Destroyable(collider_entity));
                 }
 
                 // break if this collide is on a solid, otherwise continue check whether a solid is also in collision
@@ -154,6 +162,13 @@ pub fn ball_collisions(
                         let collision_position = (ball_x - paddle_x) / paddle_diameter;
                         println!("Collision position: {}", collision_position);
                         ball_vel.dx += collision_position;
+                        ball_hit_event = ball_hit_event.or(Some(BallHitEvent::Paddle));
+                    } else {
+                        // It is a wall hit
+                        ball_hit_event = ball_hit_event.or(Some(BallHitEvent::Wall));
+                    }
+                    if let Some(ball_hit_event) = ball_hit_event {
+                        ball_hit_events.send(ball_hit_event);
                     }
                     break;
                 }
@@ -174,6 +189,14 @@ pub fn ball_collisions(
                 if ball_transform.translation.x() > max_ball_x {
                     println!("Hit right wall, fixing from {} to {}", ball_transform.translation.x(), max_ball_x);
                     ball_vel.dx = -ball_vel.dx;
+                }
+            }
+
+            if let Collider::WallTop = collider {
+                let max_ball_y = col_transform.translation.y() - col_sprite.size.y() / 2. - ball_sprite.size.y() / 2.;
+                if ball_transform.translation.y() > max_ball_y {
+                    println!("Hit top wall, fixing from {} to {}", ball_transform.translation.x(), max_ball_y);
+                    ball_vel.dy = -ball_vel.dy;
                 }
             }
         }

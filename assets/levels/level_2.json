@@ -1,0 +1,34 @@
+{
+    "brick_rows": [
+        {
+            "x_left": -425,
+            "y_top": 200,
+            "brick_count": 6,
+            "brick_interval": 20,
+            "brick_size_mult": 1,
+            "brick_hp": 1
+        },
+        {
+            "x_left": -500,
+            "y_top": 300,
+            "brick_count": 7,
+            "brick_interval": 20,
+            "brick_size_mult": 1,
+            "brick_hp": 2
+        }
+    ],
+    "bricks": [
+        {
+            "x": 0,
+            "y": 100,
+            "size_mult": 1,
+            "hp": 2
+        }
+    ],
+    "balls": [
+        {
+            "speed": 1,
+            "size_mult": 1
+        }
+    ]
+}

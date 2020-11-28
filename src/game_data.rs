@@ -51,8 +51,14 @@ pub fn start_level(
 ) {
     if let GameState::Paused(_) = game_data.state {
         if input.pressed(KeyCode::Space) {
-            let level_config = level_config_asset.get(&levels.level_1).unwrap();
-            spawn_level(&mut commands, level_config, &materials, &game_data);
+            let level_handle = match game_data.level {
+                1 => &levels.level_1,
+                2 => &levels.level_2,
+                3 => &levels.level_3,
+                _ => &levels.level_1,
+            };
+            let level_config = level_config_asset.get(level_handle).unwrap();
+            spawn_level(&mut commands, &level_config, &materials); // level_config,
             game_data.state = GameState::Play;
         }
     } 

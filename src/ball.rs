@@ -7,7 +7,7 @@ use crate::{
     Materials,
     velocity::Velocity,
     powerup::Powerup,
-    game_data::{GameData, LifeLostEvent},
+    game_data::{LifeLostEvent},
 };
 
 const BALL_START_SPEED: f32 = 400.;
@@ -49,8 +49,7 @@ pub fn spawn_ball(commands: & mut Commands, materials: &Materials, speed: f32, s
 pub fn handle_fallen_down(
     mut commands: Commands,
     materials: Res<Materials>,
-    game_data: ResMut<GameData>,
-    mut life_lost_events: ResMut<Events<LifeLostEvent>>, 
+    mut life_lost_events: ResMut<Events<LifeLostEvent>>,
     q_ball: Query<With<Ball, (&Transform, Entity)>>,
     q_powerup: Query<With<Powerup, (&Transform, Entity)>>
 ) {

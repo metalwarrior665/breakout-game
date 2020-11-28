@@ -32,5 +32,5 @@ pub fn spawn_walls(mut commands: Commands, materials: Res<Materials>) {
             transform: Transform::from_translation(Vec3::new(0., WALL_TOP_Y, 0.)),
             ..Default::default()
         })
-        .with(Collider::Invunerable);
+        .with(Collider::WallTop);
 }
