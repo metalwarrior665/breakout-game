@@ -57,7 +57,6 @@ pub struct Levels {
 fn setup(
     mut commands: Commands,
     mut materials: ResMut<Assets<ColorMaterial>>,
-    // mut levels: ResMut<Assets<LevelConfig>>,
     asset_server: Res<AssetServer>,
 ) {
     commands.spawn(Camera2dComponents::default());
@@ -75,8 +74,6 @@ fn setup(
     };
     commands.insert_resource(materials_res);
 
-    
-    
     commands.insert_resource(Levels {
         level_1: asset_server.load("levels/level_1.json"),
         level_2: asset_server.load("levels/level_2.json"),
